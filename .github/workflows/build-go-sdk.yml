@@ -74,6 +74,7 @@ jobs:
           git config --local user.name "GitHub Action Bot"
 
           # Check if there are any changes
+          git status
     
           if git status --porcelain | grep -q -E '^(M| A| D|R| C|U) '; then
            # Changes are present
