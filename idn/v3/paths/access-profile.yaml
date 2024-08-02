@@ -1,5 +1,5 @@
 get:
-  operationId: getAccessProfileTest
+  operationId: getAccessProfile
   tags:
     - Access Profiles
   summary: Get an Access Profile
