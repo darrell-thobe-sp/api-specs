@@ -45,15 +45,31 @@ jobs:
 
           if git status --porcelain | grep -q .; then
             # Changes are present
+            BRANCH_NAME="sync-api-specs-${{ github.run_id }}"
+            git checkout -b $BRANCH_NAME
             git add .
             git commit -m "Automated commit by github action: ${{ github.run_id }}"
-            git remote set-url origin https://${{secrets.DEVREL_SERVICE_TOKEN}}@github.com/sailpoint-oss/developer.sailpoint.com.git
-            git remote -v
-            git push
+            git push origin $BRANCH_NAME
           else
             # No changes are present
             echo "No changes to commit"
           fi
+      - name: Wait for PR Checks to Complete
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEVREL_SERVICE_TOKEN }}
+        run: |
+          BRANCH_NAME="sync-api-specs-${{ github.run_id }}"
+          PR_URL=$(gh pr list --state open --head $BRANCH_NAME --json url -q '.[0].url')
+          echo "Waiting for PR checks to complete..."
+          while true; do
+            CHECKS_STATUS=$(gh pr checks $PR_URL --json status -q '.status')
+            if [ "$CHECKS_STATUS" == "completed" ]; then
+              echo "All checks completed."
+              break
+            fi
+            echo "Waiting for checks to complete..."
+            sleep 30
+          done
           
   push_idn_spec_workflow-failure:
             runs-on: ubuntu-latest
